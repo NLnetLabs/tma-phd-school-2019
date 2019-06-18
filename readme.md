@@ -36,6 +36,9 @@ This is also a transit AS that all student VMs connect to. It is
 set up the same way as AS65000, except that this AS does implement
 RPKI filtering and rejects announcements with a status RPKI invalid.
 
+This machine also hosts the RPKI CA and publishes it at
+rsync://rpki-workshop-filter.do.nlnetlabs.nl/rpki/
+
 ### AS65101 - AS65018: student1-17
 
 Name: rpki-workshop-student-$NR.do.nlnetlabs.nl
@@ -69,6 +72,17 @@ Student machines are allocated the following prefixes:
 By default all machines announce these prefixes in full. In
 addition to all hijack a /24 from another student.
 
+The machines run an rsync daemon publishing the
+`/home/rpki/repository` directory under
+rsync://rpki-workshop-student-$NR.do.nlnetlabs.nl/rpki/.
+
+Each has been given a certificate to for its own RPKI CA authorized to
+publish objects for their prefix and ASN. The key pair for this CA is in
+`/home/rpki/student-{1..18].{key,pub}`. The certificate is at
+rsync://rpki-workshop-filter.do.nlnetlabs.nl/rpki/student-{1..18].cer. It
+expects the manifest for the CA to be
+rsync://rpki-workshop-student-$NR.do.nlnetlabs.nl/rpki/ca.mft.
+
 ## Instructions
 
 ### Login
@@ -81,8 +95,8 @@ Student machines run Bird 2.0.4. Documentation for Bird can
 be found [here](https://bird.network.cz/?get_doc&f=bird.html&v=20)
 
 The bird config files are here:
-/usr/local/etc/bird.conf
-/usr/local/etc/bird.conf.d/*.conf
+* `/usr/local/etc/bird.conf`
+* `/usr/local/etc/bird.conf.d/*.conf`
 
 The 'rpki' user can stop/start and reconfigure bird. Some useful
 commands:
@@ -111,6 +125,23 @@ prefixes on the "lo" interface:
   Where prefix is inside 192.168.0.0/16.
 ```
 
-### Create CA certs, mft, crl and ROAs
+### Create an RPKI CA
 
-..uri to ca.mft
+You can create your RPKI objects using the `mkrpki` command line tool.
+It has a man page, so you can find instructions by saying `man mkrpki`.
+
+For your CA, you will need to create a CRL, one or more ROAs, and a
+manifest. Place all objects in `/home/rpki/repository/` so they get
+published by rsync.
+
+To verify whether things work, you can run Routinator locally. It has been
+set up with the correct TAL, so you can just do
+
+```
+$ routinator -vv vrps
+```
+
+To look at your objects, you can use the
+[ASN.1 JavaScript Decoder](https://lapo.it/asn1js/) after copying to your
+own machine.
+
