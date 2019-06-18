@@ -112,6 +112,15 @@ commands:
 
 Bird is configured to import any prefixes tied to the "lo" interface.
 
+*IMPORTANT:*
+
+It seems that routes are not re-evaluated by Bird when the VRPs change.
+I.e. if a route was accepted it stays accepted, and if it was rejected it
+stays rejected. To overcome this use ```birdc restart all```.
+
+We are not entirely sure whether this is a bug in Bird, or that it's something
+in our set-up, but will follow up with the Bird team.
+
 ### List / add / del prefixes
 
 We made a small script that allows the 'rpki' user to list/add/del
